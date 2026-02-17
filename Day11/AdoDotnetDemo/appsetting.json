@@ -1,0 +1,5 @@
+{
+  "ConnectionStrings": {
+    "master": "Server=DESKTOP-KLCVA4H\\SQLEXPRESS;Database=master;Trusted_Connection=True;TrustServerCertificate=True;"
+  }
+}
