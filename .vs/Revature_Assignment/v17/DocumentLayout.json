@@ -1,0 +1,41 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "D:\\REVATURE\\Revature_Assignment\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{C3DA3865-0644-4F9D-8138-31B1084A692E}|Day12\\EFCoreDemo\\EFCoreDemo.csproj|d:\\revature\\revature_assignment\\day12\\efcoredemo\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{C3DA3865-0644-4F9D-8138-31B1084A692E}|Day12\\EFCoreDemo\\EFCoreDemo.csproj|solutionrelative:day12\\efcoredemo\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 0,
+          "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "Program.cs",
+              "DocumentMoniker": "D:\\REVATURE\\Revature_Assignment\\Day12\\EFCoreDemo\\Program.cs",
+              "RelativeDocumentMoniker": "Day12\\EFCoreDemo\\Program.cs",
+              "ToolTip": "D:\\REVATURE\\Revature_Assignment\\Day12\\EFCoreDemo\\Program.cs",
+              "RelativeToolTip": "Day12\\EFCoreDemo\\Program.cs",
+              "ViewState": "AgIAADYAAAAAAAAAAAAAAEIAAAAXAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-02-18T19:28:53.303Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{cce594b6-0c39-4442-ba28-10c64ac7e89f}"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
