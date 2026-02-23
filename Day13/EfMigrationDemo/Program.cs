@@ -1,14 +1,11 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore;
 
+
 class Program
 {
     static void Main(string[] args)
     {
-        // Build DbContextOptions since console apps don't have DI by default
-        var options = new DbContextOptionsBuilder<AppDbContext>()
-            .UseSqlServer("Server=.\\SQLEXPRESS;Database=EFMigrationDemo;Trusted_Connection=True;TrustServerCertificate=True;")
-            .Options;
 
         using (var db = new AppDbContext())
         {

@@ -47,9 +47,9 @@ Console.WriteLine($"Customers Count: {customers.Count()}");
 // customers.Add(new Customer { Name = "Danny Lee", Age = 30 });
 // _context.SaveChanges();
 
-var danny = new Customer { Name = "Danny Lee", Age = 30 };
-_context.Customers.Add(danny);
-_context.SaveChanges();
+// var danny = new Customer { Name = "Danny Lee", Age = 30 };
+// _context.Customers.Add(danny);
+// _context.SaveChanges();
 
 // Because DbSet is not IList, index operator will not work
 // var first = _context.Customers[0];
