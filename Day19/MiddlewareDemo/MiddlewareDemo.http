@@ -1,0 +1,6 @@
+@MiddlewareDemo_HostAddress = http://localhost:5000
+
+GET {{MiddlewareDemo_HostAddress}}/api/v1/customer
+Accept: application/json
+
+###
