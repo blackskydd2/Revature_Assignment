@@ -22,7 +22,7 @@ var paymentService  = new PaymentService(paymentRepo, invoiceRepo, statusValidat
 // ════════════════════════════════════════════════════════════════════════════
 //  ENSURE DB IS CREATED
 // ════════════════════════════════════════════════════════════════════════════
-await context.Database.EnsureCreatedAsync();
+// await context.Database.EnsureCreatedAsync();
 Console.WriteLine("═══════════════════════════════════════════════════════");
 Console.WriteLine("       INVOICE MANAGEMENT SYSTEM — Demo Console        ");
 Console.WriteLine("═══════════════════════════════════════════════════════\n");

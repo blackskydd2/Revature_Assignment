@@ -1,3 +1,6 @@
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 using InvoiceManagement.DAL.Models;
 
 namespace InvoiceManagement.DAL.Repositories.Interfaces
@@ -7,9 +10,9 @@ namespace InvoiceManagement.DAL.Repositories.Interfaces
     /// </summary>
     public interface IPaymentRepository : IRepository<Payment>
     {
-        Task<IEnumerable<Payment>> GetPaymentsByInvoiceIdAsync(int invoiceId);
-        Task<decimal> GetTotalPaidForInvoiceAsync(int invoiceId);
-        Task<IEnumerable<Payment>> GetPaymentsByMethodAsync(int methodId);
+        Task<IEnumerable<Payment>> GetPaymentsByInvoiceIdAsync(string invoiceId);
+        Task<decimal> GetTotalPaidForInvoiceAsync(string invoiceId);
+        Task<IEnumerable<Payment>> GetPaymentsByMethodAsync(string methodId);
         Task<IEnumerable<Payment>> GetPaymentsByDateRangeAsync(DateTime from, DateTime to);
     }
 }

@@ -1,73 +1,43 @@
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
+using MongoDB.Bson;
+using MongoDB.Bson.Serialization.Attributes;
 
 namespace InvoiceManagement.DAL.Models
 {
-    /// <summary>
-    /// Records a payment (full or partial) made against an invoice.
-    /// 
-    /// RELATIONSHIPS:
-    ///   Payment (N) ──────────── (1) Invoice         [FK: InvoiceId]
-    ///   Payment (N) ──────────── (1) PaymentMethod   [FK: MethodId]
-    /// 
-    ///   DELETE RULES:
-    ///     Invoice   → Cascade  (payment removed when invoice is deleted)
-    ///     PaymentMethod → Restrict (cannot delete method if payments exist)
-    /// 
-    /// PARTIAL PAYMENT SUPPORT:
-    ///   Multiple payments can exist per invoice.
-    ///   Invoice.AmountPaid = SUM of all Payment.PaymentAmount for that invoice.
-    ///   Invoice status updated to PartiallyPaid or Paid by PaymentService.
-    /// </summary>
-    [Table("Payments")]
     public class Payment
     {
-        // ── Primary Key ──────────────────────────────────────────────────────
-        [Key]
-        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public int PaymentId { get; set; }
+        [BsonId] // MongoDB primary key (_id)
+        [BsonRepresentation(BsonType.ObjectId)]
+        public string Id { get; set; } = null!;
 
-        // ── Foreign Key → Invoice ────────────────────────────────────────────
-        [Required]
-        [ForeignKey("Invoice")]
-        public int InvoiceId { get; set; }
+        [BsonElement("InvoiceId")]
+        public string InvoiceId { get; set; } = null!; // Reference to Invoice document
 
-        // ── Foreign Key → PaymentMethod ─────────────────────────────────────
-        [Required]
-        [ForeignKey("Method")]
-        public int MethodId { get; set; }
+        [BsonElement("MethodId")]
+        public string MethodId { get; set; } = null!; // Reference to PaymentMethod document
 
-        // ── Payment Details ──────────────────────────────────────────────────
-        [Required]
-        [Column(TypeName = "decimal(18,2)")]
-        [Range(0.01, double.MaxValue, ErrorMessage = "Payment amount must be greater than 0.")]
+        [BsonElement("PaymentAmount")]
         public decimal PaymentAmount { get; set; }
 
-        [Required]
+        [BsonElement("PaymentDate")]
         public DateTime PaymentDate { get; set; }
 
-        /// <summary>
-        /// Date the payment was physically received/cleared (may differ from PaymentDate).
-        /// Useful for bank reconciliation.
-        /// </summary>
+        [BsonElement("ReceivedDate")]
         public DateTime ReceivedDate { get; set; }
 
-        /// <summary>
-        /// External reference: cheque number, transaction ID, UPI reference, etc.
-        /// </summary>
-        [MaxLength(100)]
+        [BsonElement("ReferenceNumber")]
         public string? ReferenceNumber { get; set; }
 
-        [MaxLength(300)]
+        [BsonElement("Notes")]
         public string? Notes { get; set; }
 
-        // ── Audit ────────────────────────────────────────────────────────────
+        [BsonElement("CreatedDate")]
         public DateTime CreatedDate { get; set; } = DateTime.UtcNow;
 
-        // ── Navigation: Many Payments → One Invoice ──────────────────────────
-        public Invoice Invoice { get; set; } = null!;
+        // Navigation-like references (MongoDB doesn’t enforce FK, but you can embed or reference)
+        [BsonElement("Invoice")]
+        public Invoice? Invoice { get; set; }
 
-        // ── Navigation: Many Payments → One PaymentMethod ───────────────────
-        public PaymentMethod Method { get; set; } = null!;
+        [BsonElement("Method")]
+        public PaymentMethod? Method { get; set; }
     }
 }

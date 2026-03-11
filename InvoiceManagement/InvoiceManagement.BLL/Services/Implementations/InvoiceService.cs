@@ -36,21 +36,17 @@ namespace InvoiceManagement.BLL.Services.Implementations
         /// </summary>
         public async Task<Invoice> CreateInvoiceAsync(Invoice invoice, List<InvoiceLineItem> lineItems)
         {
-            // Step 1: Generate invoice number
             invoice.InvoiceNumber = await _numberEngine.GenerateAsync(invoice.InvoiceDate);
 
-            // Step 2: Calculate due date from payment terms
             if (Enum.TryParse<PaymentTerms>(invoice.PaymentTerms, out var terms))
                 invoice.DueDate = _calcEngine.CalculateDueDate(invoice.InvoiceDate, terms);
 
-            // Step 3: Attach line items and calculate all totals
             invoice.LineItems = lineItems;
             foreach (var item in invoice.LineItems)
                 _calcEngine.CalculateLineItem(item);
 
             _calcEngine.CalculateInvoiceTotals(invoice);
 
-            // Step 4: Default status is Draft
             invoice.Status = InvoiceStatus.Draft.ToString();
             invoice.CreatedDate = DateTime.UtcNow;
             invoice.AmountPaid = 0;
@@ -58,9 +54,9 @@ namespace InvoiceManagement.BLL.Services.Implementations
             return await _invoiceRepo.AddAsync(invoice);
         }
 
-        public async Task<Invoice?> GetInvoiceByIdAsync(int invoiceId)
+        public async Task<Invoice?> GetInvoiceByIdAsync(string id)
         {
-            return await _invoiceRepo.GetWithLineItemsAndPaymentsAsync(invoiceId);
+            return await _invoiceRepo.GetWithLineItemsAndPaymentsAsync(id);
         }
 
         public async Task<Invoice?> GetInvoiceByNumberAsync(string invoiceNumber)
@@ -78,35 +74,27 @@ namespace InvoiceManagement.BLL.Services.Implementations
             return await _invoiceRepo.GetByCustomerIdAsync(customerId);
         }
 
-        /// <summary>
-        /// Updates invoice status after validating the transition is allowed.
-        /// Throws InvalidOperationException for illegal transitions.
-        /// </summary>
-        public async Task<Invoice> UpdateInvoiceStatusAsync(int invoiceId, InvoiceStatus newStatus)
+        public async Task<Invoice> UpdateInvoiceStatusAsync(string id, InvoiceStatus newStatus)
         {
-            var invoice = await _invoiceRepo.GetByIdAsync(invoiceId)
-                ?? throw new KeyNotFoundException($"Invoice {invoiceId} not found.");
+            var invoice = await _invoiceRepo.GetByIdAsync(id)
+                ?? throw new KeyNotFoundException($"Invoice {id} not found.");
 
             var currentStatus = _statusValidator.ParseStatus(invoice.Status);
-            _statusValidator.ValidateTransition(currentStatus, newStatus); // Throws if invalid
+            _statusValidator.ValidateTransition(currentStatus, newStatus);
 
             invoice.Status = newStatus.ToString();
             return await _invoiceRepo.UpdateAsync(invoice);
         }
 
-        /// <summary>
-        /// Adds a line item to an existing Draft invoice and recalculates totals.
-        /// Only Draft invoices can be modified.
-        /// </summary>
-        public async Task<Invoice> AddLineItemAsync(int invoiceId, InvoiceLineItem lineItem)
+        public async Task<Invoice> AddLineItemAsync(string id, InvoiceLineItem lineItem)
         {
-            var invoice = await _invoiceRepo.GetWithLineItemsAndPaymentsAsync(invoiceId)
-                ?? throw new KeyNotFoundException($"Invoice {invoiceId} not found.");
+            var invoice = await _invoiceRepo.GetWithLineItemsAndPaymentsAsync(id)
+                ?? throw new KeyNotFoundException($"Invoice {id} not found.");
 
             if (invoice.Status != InvoiceStatus.Draft.ToString())
                 throw new InvalidOperationException("Line items can only be added to Draft invoices.");
 
-            lineItem.InvoiceId = invoiceId;
+            lineItem.InvoiceId = invoice.Id; // now string
             _calcEngine.CalculateLineItem(lineItem);
             invoice.LineItems.Add(lineItem);
             _calcEngine.CalculateInvoiceTotals(invoice);
@@ -114,15 +102,15 @@ namespace InvoiceManagement.BLL.Services.Implementations
             return await _invoiceRepo.UpdateAsync(invoice);
         }
 
-        public async Task<bool> RemoveLineItemAsync(int invoiceId, int lineItemId)
+        public async Task<bool> RemoveLineItemAsync(string id, string lineItemId)
         {
-            var invoice = await _invoiceRepo.GetWithLineItemsAndPaymentsAsync(invoiceId)
-                ?? throw new KeyNotFoundException($"Invoice {invoiceId} not found.");
+            var invoice = await _invoiceRepo.GetWithLineItemsAndPaymentsAsync(id)
+                ?? throw new KeyNotFoundException($"Invoice {id} not found.");
 
             if (invoice.Status != InvoiceStatus.Draft.ToString())
                 throw new InvalidOperationException("Line items can only be removed from Draft invoices.");
 
-            var item = invoice.LineItems.FirstOrDefault(li => li.LineItemId == lineItemId)
+            var item = invoice.LineItems.FirstOrDefault(li => li.Id == lineItemId)
                 ?? throw new KeyNotFoundException($"Line item {lineItemId} not found.");
 
             invoice.LineItems.Remove(item);
@@ -131,17 +119,16 @@ namespace InvoiceManagement.BLL.Services.Implementations
             return true;
         }
 
-        public async Task<bool> ArchiveInvoiceAsync(int invoiceId)
+        public async Task<bool> ArchiveInvoiceAsync(string id)
         {
-            var invoice = await _invoiceRepo.GetByIdAsync(invoiceId)
-                ?? throw new KeyNotFoundException($"Invoice {invoiceId} not found.");
+            var invoice = await _invoiceRepo.GetByIdAsync(id)
+                ?? throw new KeyNotFoundException($"Invoice {id} not found.");
 
-            // Only Paid or Cancelled invoices should be archived
             if (invoice.Status != InvoiceStatus.Paid.ToString() &&
                 invoice.Status != InvoiceStatus.Cancelled.ToString())
                 throw new InvalidOperationException("Only Paid or Cancelled invoices can be archived.");
 
-            return await _invoiceRepo.ArchiveInvoiceAsync(invoiceId);
+            return await _invoiceRepo.ArchiveInvoiceAsync(id);
         }
 
         public async Task<IEnumerable<Invoice>> GetOverdueInvoicesAsync()
@@ -149,9 +136,6 @@ namespace InvoiceManagement.BLL.Services.Implementations
             return await _invoiceRepo.GetOverdueInvoicesAsync();
         }
 
-        /// <summary>
-        /// Generates aging report grouped into buckets: Current, 1-30, 31-60, 61-90, 90+
-        /// </summary>
         public async Task<Dictionary<string, List<Invoice>>> GetAgingReportAsync()
         {
             var allUnpaid = await _invoiceRepo.GetByStatusAsync(InvoiceStatus.Sent.ToString());
@@ -159,7 +143,7 @@ namespace InvoiceManagement.BLL.Services.Implementations
             var partial = await _invoiceRepo.GetByStatusAsync(InvoiceStatus.PartiallyPaid.ToString());
 
             var allActive = allUnpaid.Concat(overdue).Concat(partial)
-                .DistinctBy(i => i.InvoiceId);
+                .DistinctBy(i => i.Id);
 
             var report = new Dictionary<string, List<Invoice>>
             {
@@ -180,9 +164,6 @@ namespace InvoiceManagement.BLL.Services.Implementations
             return report;
         }
 
-        /// <summary>
-        /// Calculates Days Sales Outstanding for a given period.
-        /// </summary>
         public async Task<decimal> GetDSOAsync(int periodDays = 30)
         {
             var allInvoices = await _invoiceRepo.GetAllAsync();
@@ -192,10 +173,6 @@ namespace InvoiceManagement.BLL.Services.Implementations
             return _calcEngine.CalculateDSO(totalOutstanding, totalRevenue, periodDays);
         }
 
-        /// <summary>
-        /// Should be called daily (e.g., via a scheduled job) to auto-transition
-        /// Sent invoices to Overdue when their DueDate has passed.
-        /// </summary>
         public async Task UpdateOverdueStatusesAsync()
         {
             var sentInvoices = await _invoiceRepo.GetByStatusAsync(InvoiceStatus.Sent.ToString());
