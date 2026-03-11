@@ -1,70 +1,60 @@
-﻿
-// null coalesing demo
-// string name = "Zia";
+﻿// Manual Singleton (Static Factory Pattern)
 
-// // null coalescing operator
-// var defaultName = name ?? "Sarah";
+// using System;
+// using Microsoft.Extensions.DependencyInjection;
 
-// var isTrue = 1 == 1;
+// var l1 = LoggerSingleton.Create();
+// var l2 = LoggerSingleton.Create();
+// var l3 = LoggerSingleton.Create();
 
-// Console.WriteLine($"name: {defaultName}");
+// System.Console.WriteLine(l1.GetHashCode());
+// System.Console.WriteLine(l2.GetHashCode());
+// System.Console.WriteLine(l3.GetHashCode());
 
-// return;
+// public class LoggerSingleton
+// {
+//     private static LoggerSingleton ? _instance;
 
+//     private static readonly object _lock = new();
 
+//     private LoggerSingleton() {}
 
+//     public static LoggerSingleton Create()
+//     {
+//         if (_instance == null)
+//         {
+//             lock(_lock)
+//             {
+//                 if (_instance == null)
+//                 {
+//                     _instance = new LoggerSingleton();
+//                 }
+//             }
+//         }
+//         return _instance;
 
-// var logger = new SingletonLogger();
+//     }
+// }
 
+// Singleton via Dependency Injection
+
+using System.Net.Http.Headers;
 using Microsoft.Extensions.DependencyInjection;
 
 var services = new ServiceCollection();
-services.AddSingleton<DiSignleton>();
 
-var serviceProvider = services.BuildServiceProvider();
+// Register as Singleton in DI
+services.AddSingleton<AppSingleton>();
 
-var diLogger1 = serviceProvider.GetService<DiSignleton>();
-var diLogger2 = serviceProvider.GetService<DiSignleton>();
+var provider = services.BuildServiceProvider();
 
-var loggerManual = new DiSignleton();
+var s1 = provider.GetService<AppSingleton>();
+var s2 = provider.GetService<AppSingleton>();
 
-Console.WriteLine(diLogger1.GetHashCode());
-Console.WriteLine(diLogger2.GetHashCode());
-Console.WriteLine(loggerManual.GetHashCode());
-
-public class DiSignleton
+System.Console.WriteLine("Through DI");
+System.Console.WriteLine(s1.GetHashCode());
+System.Console.WriteLine(s2.GetHashCode());
+public class AppSingleton
 {
-    public int Value { get; set; }
+    public int Id { get; set; }
 }
-
-// var logger1 = SingletonLogger.CreateStaticLogger();
-// var logger2 = SingletonLogger.CreateStaticLogger();
-// var logger3 = SingletonLogger.CreateStaticLogger();
-
-
-// Console.WriteLine(logger1.GetHashCode());
-// Console.WriteLine(logger2.GetHashCode());
-// Console.WriteLine(logger3.GetHashCode());
-
-// public class SingletonLogger
-// {
-//     private static SingletonLogger? singletonInstance;
-//     private SingletonLogger() { }
-
-//     // Factory
-//     public static SingletonLogger CreateStaticLogger()
-//     {
-//         // singletonInstance ??= new SingletonLogger();
-
-//         lock (typeof(SingletonLogger))
-//         {
-//             // Critical Session
-//             if (singletonInstance == null)
-//             {
-//                 singletonInstance = new SingletonLogger();
-//             }
-//         }
-
-//         return singletonInstance;
-//     }
-// }
