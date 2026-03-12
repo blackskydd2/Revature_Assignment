@@ -1,0 +1,23 @@
+## .NET
+bin/
+obj/
+*.user
+*.suo
+.vs/
+*.swp
+*.DS_Store
+
+## Rider / VS Code
+.idea/
+.vscode/
+
+## Secrets & Config overrides
+appsettings.Development.json
+appsettings.Local.json
+secrets.json
+
+## Build artifacts
+artifacts/
+TestResults/
+coverage/
+*.nupkg
